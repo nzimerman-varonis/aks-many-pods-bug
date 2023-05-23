@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wait-forever
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wait-forever
+  template:
+    metadata:
+      labels:
+        app: wait-forever
+    spec:
+      nodeSelector:
+        kubernetes.io/os: windows
+        kubernetes.azure.com/os-sku: Windows2022
+      enableServiceLinks: false
+      containers:
+      - name: wait-forever
+        image: mcr.microsoft.com/dotnet/aspnet:6.0.10-nanoserver-ltsc2022
+        command: [ "cmd", "/c", "ping -t localhost > NUL" ]  # Wait forever
+        resources:
+          requests:
+            cpu: 10m
+            memory: 40Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
