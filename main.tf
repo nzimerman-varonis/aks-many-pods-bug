@@ -38,10 +38,16 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
     max_pods = 250
     os_sku   = "Ubuntu"
+
+    #os_disk_type = "Ephemeral"  # Can't use for this VM type - it has too small temporary storage
   }
 
   network_profile {
     network_plugin = "azure"
+
+    network_policy = "azure"
+    #network_policy = "calico"  # Works just as well
+
     network_plugin_mode = "Overlay"
   }
 
@@ -62,4 +68,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool_win" {
   max_pods = 250
   os_type  = "Windows"
   os_sku   = "Windows2022"
+
+  os_disk_type = "Ephemeral"
+  #kubelet_disk_type = "Temporary"  # This alone isn't sufficient
 }
