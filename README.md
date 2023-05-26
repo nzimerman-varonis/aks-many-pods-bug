@@ -25,39 +25,34 @@ To reproduce the bug -
 5. Scale the amount of replicas up to 200 -
      * `kubectl --kubeconfig=kubeconfig scale --replicas=200 deployment/wait-forever`
 
-6. Wait for some time (usually, around 10 minutes).
+6. Wait for some time (usually, around 15 minutes).
 
-7. Observe that deployment isn't successful, and some pods are in various error states.
-     * `kubectl --kubeconfig=kubeconfig get pods | grep ContainerCreating`
+7. Observe that deployment is **successful**, but various warnings are still reported.
      * `kubectl --kubeconfig=kubeconfig get deployment`
      * `kubectl --kubeconfig=kubeconfig get events --sort-by='.lastTimestamp'`
 
-   These are warnings seen -
-     * "Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup 
-       network for sandbox "344d0dd404b9445599f4805e2ed88437a2514d755943e3e71970d3adf719a5b6": 
-       plugin type="azure-vnet" failed (add): Failed to initialize key-value store of network 
+   These are warnings/statuses seen -
+     * "Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup
+       network for sandbox "7d04a736b37345a9c0147625f5f156f340277877a62b8d86f68d6745a9f41895":
+       plugin type="azure-vnet" failed (add): Failed to initialize key-value store of network
        plugin: timed out locking store"
-     * "Failed to create pod sandbox: rpc error: code = Unknown desc = failed to create
-       containerd task: failed to create shim task: hcs::CreateComputeSystem 
-       6968702e67e4dfe1915cd8d6b1920fb5cf6fff6045b595af710d370c8e5818f3: The requested 
-       operation for attach namespace failed.: unknown"
-     * "Failed to create pod sandbox: rpc error: code = DeadlineExceeded desc = context
-       deadline exceeded"
-     * "Error: failed to reserve container name
-       "wait-forever_wait-forever-5ff557cddd-z8j28_default_dbe8d63c-d20c-4cc0-b817-32762c21c206_0": name
-       "wait-forever_wait-forever-5ff557cddd-z8j28_default_dbe8d63c-d20c-4cc0-b817-32762c21c206_0" is
-       reserved for "59ab29510e8158b2d5a5be673ec28f768fe0fec189e7ac590e337bb0b2bea473"
-     * "Error: context deadline exceeded"
+     * "Filed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network
+       for sandbox "1c27f3d6924dc80298273385250f5f19598520eb0a52cdf4898094f6bbf85691": plugin
+       type="azure-vnet" failed (add): Failed to create endpoint: Failed to create endpoint:
+       1c27f3d6-eth0 due to error: hcnCreateEndpoint failed in Win32: An address provided is
+       invalid or reserved. (0x803b002f) {"Success":false,"Error":"An address provided is
+       invalid or reserved. ","ErrorCode":2151350319}"
      * "Failed to create pod sandbox: rpc error: code = Unknown desc = failed to reserve sandbox
-       name "wait-forever-5ff557cddd-wj5hl_default_76bed184-d876-4eb9-891e-5f2a4cc9f82c_1": name
-       "wait-forever-5ff557cddd-wj5hl_default_76bed184-d876-4eb9-891e-5f2a4cc9f82c_1" is reserved 
-       for "2479d3c20c5baa9cb9e8d39661c7b5184b51bffeb9b4702ab3bba13befbdd81a""
+       name "wait-forever-5ff557cddd-bl77x_default_d43e2581-c44d-4007-8b53-969768e82448_1": name
+       "wait-forever-5ff557cddd-bl77x_default_d43e2581-c44d-4007-8b53-969768e82448_1" is
+       reserved for "b36896640d18b974102bd59edb617a32c53aaafeb41cd535097caa7876a1ef20""
+     * "Pod sandbox changed, it will be killed and re-created."
 
 8. Delete the deployment -
      * `kubectl --kubeconfig=kubeconfig delete deployment wait-forever`
 
-9. At this point, the node might be in a non-recoverable state, with many pods stuck in
-   "Terminating". Scale the nodepool down to 0 and back to 1 to get a fresh node.
+9. At this point, the node should be in healthy state. If it gets to a non-recoverable state,
+   scale the node pool down to 0 and back to 1 to get a fresh node.
      * `az aks nodepool scale --resource-group aks-many-pods-bug-rg --cluster-name aks-many-pods-bug --nodepool-name win1 --node-count 0`
      * `az aks nodepool scale --resource-group aks-many-pods-bug-rg --cluster-name aks-many-pods-bug --nodepool-name win1 --node-count 1`
 
