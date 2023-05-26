@@ -40,6 +40,8 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     os_sku   = "Ubuntu"
 
     #os_disk_type = "Ephemeral"  # Can't use for this VM type - it has too small temporary storage
+
+    enable_host_encryption = true
   }
 
   network_profile {
@@ -71,4 +73,6 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool_win" {
 
   os_disk_type = "Ephemeral"
   #kubelet_disk_type = "Temporary"  # This alone isn't sufficient
+
+  enable_host_encryption = true
 }
